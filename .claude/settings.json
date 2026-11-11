@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"$CLAUDE_PROJECT_DIR/PROJECT_CONTEXT.md\"; if [ -f \"$f\" ]; then echo '=== PROJECT_CONTEXT.md (auto-loaded at session start / after compaction) ==='; cat \"$f\"; else echo 'PROJECT_CONTEXT.md is missing: create it from the repo (see CLAUDE.md).'; fi"
+          }
+        ]
+      }
+    ]
+  }
+}
