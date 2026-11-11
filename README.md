@@ -1,16 +1,31 @@
-# Claude project template
+# Portfolio Tracker
 
-Starter files that let Claude Code keep context across sessions and token limits.
+An installable web app (PWA) for tracking a stock portfolio: holdings with weights, buy/sell history, cash, dividends,
+returns, an allocation donut and a value-over-time chart. Inspired by the public portfolio page of
+mrinvestapp.com, but it's an original app with its own design and your own data.
 
-| File | Role | Changes |
-|---|---|---|
-| `CLAUDE.md` | **How** to work: your rules plus the project's commands (auto-loaded every session) | Rarely |
-| `PROJECT_CONTEXT.md` | **Where** the project stands: status, done, in progress, next | Constantly |
-| `docs/` | **What** we know: architecture, methods, decision log, prompts | Sometimes |
-| `.claude/settings.json` | Hook that re-loads `PROJECT_CONTEXT.md` at session start and after every compaction | Never |
+- **No build step, no dependencies, no API keys.** Plain HTML/CSS/JS modules in `app/`.
+- **Private:** data lives only in your browser (localStorage). Export/import a JSON backup or a CSV of trades.
+- **Works offline and installs to your phone** ("Add to Home Screen") via the service worker and manifest.
+- Prices are entered by hand ("Update prices"); there is no live price feed.
 
-## Start a new project
-1. On GitHub: **Use this template → Create a new repository**.
-2. Open it in Claude Code and say:
-   > Set up the context files for this project: fill in CLAUDE.md project specifics, PROJECT_CONTEXT.md and docs/architecture.md.
-3. Use the prompts in `docs/context-workflow.md`, e.g. "Save context." / "Wrap up." / "Where are we?"
+## Run locally
+```bash
+npm start        # serves app/ at http://localhost:8080
+npm test         # unit tests for the portfolio maths (Node 20+)
+```
+
+## Publish it (free, GitHub Pages)
+1. Merge this branch into `main`.
+2. In the repo: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+3. The workflow `.github/workflows/pages.yml` tests and deploys `app/`. The site appears at
+   `https://<your-username>.github.io/MrInvestAppClone/`.
+
+## CSV format
+`date,type,ticker,shares,price,amount,fee,note`. `type` is `buy`, `sell`, `dividend`, `deposit` or `withdraw`.
+Buys and sells use `shares` and `price`; the other types use `amount`.
+
+## Context files
+`CLAUDE.md` (how to work), `PROJECT_CONTEXT.md` (status), `docs/` (architecture and decisions).
+
+_For personal record-keeping and education only. Not investment advice._

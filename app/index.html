@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Portfolio Tracker</title>
+  <meta name="description" content="Track your holdings, weights, trades and returns. Data stays on your device.">
+  <meta name="theme-color" content="#0f766e">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><path d="M7 22l6-7 5 4 7-9" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span id="portfolio-name">Portfolio</span>
+    </div>
+    <nav class="tabs" aria-label="Main">
+      <a href="#overview" data-view="overview">Overview</a>
+      <a href="#holdings" data-view="holdings">Holdings</a>
+      <a href="#trades" data-view="trades">Trades</a>
+      <a href="#settings" data-view="settings">Settings</a>
+    </nav>
+    <div class="actions">
+      <button class="btn ghost" id="btn-prices" type="button">Update prices</button>
+      <button class="btn primary" id="btn-add" type="button">+ Add trade</button>
+    </div>
+  </header>
+
+  <div id="demo-banner" class="banner" hidden>
+    You're looking at demo data. <button class="link" id="btn-clear-demo" type="button">Start with an empty portfolio</button>
+  </div>
+
+  <main id="main">
+    <!-- OVERVIEW -->
+    <section id="view-overview" class="view">
+      <div class="hero card">
+        <div>
+          <div class="label">Total value</div>
+          <div class="big" id="kpi-total">–</div>
+          <div class="sub" id="kpi-day">–</div>
+        </div>
+        <div class="kpis">
+          <div><div class="label">Total return</div><div class="kpi" id="kpi-return">–</div></div>
+          <div><div class="label">Unrealized P/L</div><div class="kpi" id="kpi-unreal">–</div></div>
+          <div><div class="label">Realized P/L</div><div class="kpi" id="kpi-real">–</div></div>
+          <div><div class="label">Dividends</div><div class="kpi" id="kpi-div">–</div></div>
+          <div><div class="label">Cash</div><div class="kpi" id="kpi-cash">–</div></div>
+          <div><div class="label">Positions</div><div class="kpi" id="kpi-count">–</div></div>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="card">
+          <div class="card-head">
+            <h2>Value over time</h2>
+            <div class="legend-inline"><span class="sw value"></span>Value <span class="sw contrib"></span>Money in</div>
+          </div>
+          <div id="chart-line" class="chart-line"></div>
+          <p class="note">Past points use each holding's last trade price (no price feed). From today on, a daily snapshot is saved when you open the app.</p>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <h2>Allocation</h2>
+            <div class="seg" role="group" aria-label="Group allocation by">
+              <button type="button" data-alloc="ticker">Holding</button>
+              <button type="button" data-alloc="sector">Sector</button>
+            </div>
+          </div>
+          <div class="alloc">
+            <div id="chart-donut"></div>
+            <ul id="alloc-legend" class="legend"></ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="card">
+          <div class="card-head"><h2>Top movers today</h2></div>
+          <ul id="movers" class="list"></ul>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Recent trades</h2><a href="#trades" class="link">See all</a></div>
+          <ul id="recent" class="list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOLDINGS -->
+    <section id="view-holdings" class="view" hidden>
+      <div class="card">
+        <div class="card-head">
+          <h2>Holdings</h2>
+          <input id="holdings-search" class="search" type="search" placeholder="Search ticker or name" aria-label="Search holdings">
+        </div>
+        <div class="table-wrap">
+          <table id="holdings-table" class="table">
+            <thead>
+              <tr>
+                <th data-sort="ticker">Holding</th>
+                <th data-sort="shares" class="num">Shares</th>
+                <th data-sort="avgCost" class="num">Avg cost</th>
+                <th data-sort="price" class="num">Price</th>
+                <th data-sort="dayChangePct" class="num">Today</th>
+                <th data-sort="value" class="num">Value</th>
+                <th data-sort="weight" class="num">Weight</th>
+                <th data-sort="unrealized" class="num">P/L</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot></tfoot>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRADES -->
+    <section id="view-trades" class="view" hidden>
+      <div class="card">
+        <div class="card-head">
+          <h2>Trade history</h2>
+          <div class="filters">
+            <select id="trades-type" aria-label="Filter by type">
+              <option value="">All types</option>
+              <option value="buy">Buys</option>
+              <option value="sell">Sells</option>
+              <option value="dividend">Dividends</option>
+              <option value="deposit">Deposits</option>
+              <option value="withdraw">Withdrawals</option>
+            </select>
+            <input id="trades-search" class="search" type="search" placeholder="Ticker" aria-label="Filter by ticker">
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="trades-table" class="table">
+            <thead>
+              <tr><th>Date</th><th>Type</th><th>Ticker</th><th class="num">Shares</th><th class="num">Price</th><th class="num">Amount</th><th class="num">Fee</th><th></th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p id="trades-empty" class="empty" hidden>No transactions yet. Add a deposit, then your first buy.</p>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="view-settings" class="view" hidden>
+      <div class="card narrow">
+        <h2>Settings</h2>
+        <form id="settings-form" class="form">
+          <label>Portfolio name <input name="name" required maxlength="40"></label>
+          <label>Currency
+            <select name="currency">
+              <option>USD</option><option>EUR</option><option>GBP</option><option>CHF</option>
+              <option>CAD</option><option>AUD</option><option>JPY</option><option>SEK</option><option>NOK</option><option>DKK</option>
+            </select>
+          </label>
+          <label>Number format
+            <select name="locale">
+              <option value="en-US">1,234.56 (en-US)</option>
+              <option value="en-GB">1,234.56 (en-GB)</option>
+              <option value="de-DE">1.234,56 (de-DE)</option>
+              <option value="fr-FR">1 234,56 (fr-FR)</option>
+            </select>
+          </label>
+          <button class="btn primary" type="submit">Save</button>
+        </form>
+      </div>
+      <div class="card narrow">
+        <h2>Your data</h2>
+        <p class="note">Everything is stored only in this browser. Export a backup to move it to another device.</p>
+        <div class="btn-row">
+          <button class="btn" id="btn-export-json" type="button">Export backup (JSON)</button>
+          <label class="btn">Import backup<input id="file-json" type="file" accept=".json,application/json" hidden></label>
+        </div>
+        <div class="btn-row">
+          <button class="btn" id="btn-export-csv" type="button">Export trades (CSV)</button>
+          <label class="btn">Import trades (CSV)<input id="file-csv" type="file" accept=".csv,text/csv" hidden></label>
+        </div>
+        <p class="note">CSV columns: <code>date,type,ticker,shares,price,amount,fee,note</code>. Types: buy, sell, dividend, deposit, withdraw.</p>
+        <div class="btn-row">
+          <button class="btn" id="btn-load-demo" type="button">Load demo data</button>
+          <button class="btn danger" id="btn-reset" type="button">Delete all data</button>
+        </div>
+      </div>
+      <p class="disclaimer">For personal record-keeping and education only. Not investment advice.</p>
+    </section>
+  </main>
+
+  <nav class="bottom-tabs" aria-label="Main">
+    <a href="#overview" data-view="overview"><span>◔</span>Overview</a>
+    <a href="#holdings" data-view="holdings"><span>☰</span>Holdings</a>
+    <button type="button" class="fab" id="btn-add-mobile" aria-label="Add trade">+</button>
+    <a href="#trades" data-view="trades"><span>⇄</span>Trades</a>
+    <a href="#settings" data-view="settings"><span>⚙</span>Settings</a>
+  </nav>
+
+  <!-- Trade dialog -->
+  <dialog id="trade-dialog">
+    <form id="trade-form" class="form" method="dialog">
+      <h2 id="trade-title">Add transaction</h2>
+      <div class="seg wide" role="radiogroup" aria-label="Type" id="type-seg">
+        <button type="button" data-type="buy">Buy</button>
+        <button type="button" data-type="sell">Sell</button>
+        <button type="button" data-type="dividend">Dividend</button>
+        <button type="button" data-type="deposit">Deposit</button>
+        <button type="button" data-type="withdraw">Withdraw</button>
+      </div>
+      <input type="hidden" name="type">
+      <label>Date <input type="date" name="date" required></label>
+      <label data-for="ticker">Ticker <input name="ticker" list="ticker-list" autocomplete="off" placeholder="e.g. AAPL" maxlength="15"></label>
+      <datalist id="ticker-list"></datalist>
+      <div class="row2" data-for="shares">
+        <label>Shares <input name="shares" type="number" step="any" min="0" inputmode="decimal"></label>
+        <label>Price per share <input name="price" type="number" step="any" min="0" inputmode="decimal"></label>
+      </div>
+      <label data-for="amount">Amount <input name="amount" type="number" step="any" min="0" inputmode="decimal"></label>
+      <label>Fee <input name="fee" type="number" step="any" min="0" value="0" inputmode="decimal"></label>
+      <div class="row2" data-for="meta">
+        <label>Name (optional) <input name="name" maxlength="60" placeholder="Company name"></label>
+        <label>Sector (optional) <input name="sector" list="sector-list" maxlength="30"></label>
+      </div>
+      <datalist id="sector-list"></datalist>
+      <label>Note (optional) <input name="note" maxlength="200"></label>
+      <p id="trade-total" class="total"></p>
+      <p id="trade-error" class="error" role="alert"></p>
+      <div class="btn-row end">
+        <button class="btn ghost" type="button" id="trade-cancel">Cancel</button>
+        <button class="btn primary" type="submit" id="trade-save">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Prices dialog -->
+  <dialog id="prices-dialog">
+    <form id="prices-form" class="form" method="dialog">
+      <h2>Update prices</h2>
+      <p class="note">Enter the latest price for each holding. "Previous close" drives the "Today" change.</p>
+      <div class="table-wrap">
+        <table class="table compact">
+          <thead><tr><th>Ticker</th><th class="num">Price</th><th class="num">Previous close</th></tr></thead>
+          <tbody id="prices-body"></tbody>
+        </table>
+      </div>
+      <div class="btn-row end">
+        <button class="btn ghost" type="button" id="prices-cancel">Cancel</button>
+        <button class="btn primary" type="submit">Save prices</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Holding detail dialog -->
+  <dialog id="holding-dialog">
+    <div class="form">
+      <h2 id="hd-title"></h2>
+      <div id="hd-stats" class="stats"></div>
+      <h3>Transactions</h3>
+      <ul id="hd-trades" class="list"></ul>
+      <div class="btn-row end">
+        <button class="btn" type="button" id="hd-sell">Sell</button>
+        <button class="btn" type="button" id="hd-buy">Buy more</button>
+        <button class="btn primary" type="button" id="hd-close">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

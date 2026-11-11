@@ -27,14 +27,16 @@ Status lives in `PROJECT_CONTEXT.md`; durable knowledge lives in `docs/`.
   detail into `docs/`.
 - Commit context and docs changes (the cloud container is wiped after a session; only what's pushed survives).
 
-## 4. Project specifics (fill in for each project)
-- **Expert roles:** <e.g. web developer, data analyst>
+## 4. Project specifics
+- **Expert roles:** front-end web developer (vanilla JS, PWA), personal-finance / portfolio-accounting analyst.
 - **Commands:**
   ```bash
-  # test:  <command>
-  # build: <command>
-  # run:   <command>
+  # test:  npm test            (node --test, Node 20+)
+  # build: none (static files in app/)
+  # run:   npm start           (http://localhost:8080)
   ```
-- **Working branch:** <branch>
-- **Environment facts:** <what the container can or can't reach, where builds run>
-- **Conventions:** <code style, where logic lives, testing rule>
+- **Working branch:** the session's assigned branch; GitHub Pages deploys from `main`.
+- **Environment facts:** the cloud container can't reach mrinvestapp.com (proxy blocks it). Chromium + Playwright are
+  pre-installed for screenshots and browser checks.
+- **Conventions:** no dependencies or build step. All money maths goes in `app/js/portfolio.js` (pure, tested); DOM code
+  in `app/js/app.js`. Add a test for any maths change. Bump `CACHE` in `app/sw.js` when shipping UI changes.
